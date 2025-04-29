@@ -1,79 +1,73 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Reaction Rumble 3D</title>
+    <title>Green Light Reflex 3D</title>
     <style>
-      body { margin: 0; overflow: hidden; background: black; font-family: sans-serif; color: white; }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+        font-family: sans-serif;
+        color: white;
+      }
       #status {
         position: absolute;
         top: 10px;
         left: 20px;
         font-size: 24px;
         background: rgba(0,0,0,0.5);
-        padding: 8px 16px;
+        padding: 10px 16px;
         border-radius: 10px;
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   </head>
   <body>
-    <div id="status">Wait for it...</div>
+    <div id="status">🔴 Get Ready...</div>
     <script>
+      // Three.js Setup
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
       const renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(innerWidth, innerHeight);
       document.body.appendChild(renderer.domElement);
 
       const light = new THREE.PointLight(0xffffff, 1);
       light.position.set(5, 5, 5);
       scene.add(light);
 
-      const geo = new THREE.BoxGeometry(2, 2, 2);
-      const normalMat = new THREE.MeshStandardMaterial({ color: 0x5555ff });
-      const flashMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
-
-      const cube = new THREE.Mesh(geo, normalMat);
+      const geometry = new THREE.BoxGeometry(2, 2, 2);
+      const redMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+      const greenMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+      const cube = new THREE.Mesh(geometry, redMat);
       scene.add(cube);
+
       camera.position.z = 5;
 
+      let isReady = false;
+      let reacted = false;
+      let startTime = 0;
       const status = document.getElementById("status");
 
-      let isReady = false;
-      let startTime, endTime;
+      // Start Game After Random Delay
+      const delay = 2000 + Math.random() * 3000;
+      setTimeout(() => {
+        cube.material = greenMat;
+        isReady = true;
+        startTime = performance.now();
+        status.textContent = "🟢 GO! Hit SPACE!";
+      }, delay);
 
-      function startRound() {
-        isReady = false;
-        cube.material = normalMat;
-        status.textContent = "Wait for it...";
-
-        const delay = 2000 + Math.random() * 3000;
-        setTimeout(() => {
-          cube.material = flashMat;
-          isReady = true;
-          startTime = performance.now();
-          status.textContent = "HIT SPACE!";
-        }, delay);
-      }
-
-      document.addEventListener("keydown", e => {
-        if (e.code === "Space") {
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && !reacted) {
           if (isReady) {
-            endTime = performance.now();
+            const endTime = performance.now();
             const reactionTime = Math.floor(endTime - startTime);
-            status.textContent = `🔥 Reaction Time: ${reactionTime}ms – Press Space to retry`;
-            isReady = false;
+            status.textContent = `⚡ Reaction Time: ${reactionTime} ms`;
+            reacted = true;
           } else {
-            status.textContent = "😵 Too early! Wait for the cube to glow!";
+            status.textContent = "🚫 TOO EARLY! Wait for GREEN!";
           }
-        }
-      });
-
-      startRound();
-
-      document.addEventListener("keyup", e => {
-        if (e.code === "Space" && !isReady && status.textContent.includes("Reaction Time")) {
-          startRound();
         }
       });
 
@@ -88,3 +82,4 @@
     </script>
   </body>
 </html>
+
