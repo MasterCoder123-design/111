@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Reaction Rumble 3D</title>
+    <style>
+      body { margin: 0; overflow: hidden; background: black; font-family: sans-serif; color: white; }
+      #status {
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        font-size: 24px;
+        background: rgba(0,0,0,0.5);
+        padding: 8px 16px;
+        border-radius: 10px;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  </head>
+  <body>
+    <div id="status">Wait for it...</div>
+    <script>
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const light = new THREE.PointLight(0xffffff, 1);
+      light.position.set(5, 5, 5);
+      scene.add(light);
+
+      const geo = new THREE.BoxGeometry(2, 2, 2);
+      const normalMat = new THREE.MeshStandardMaterial({ color: 0x5555ff });
+      const flashMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+
+      const cube = new THREE.Mesh(geo, normalMat);
+      scene.add(cube);
+      camera.position.z = 5;
+
+      const status = document.getElementById("status");
+
+      let isReady = false;
+      let startTime, endTime;
+
+      function startRound() {
+        isReady = false;
+        cube.material = normalMat;
+        status.textContent = "Wait for it...";
+
+        const delay = 2000 + Math.random() * 3000;
+        setTimeout(() => {
+          cube.material = flashMat;
+          isReady = true;
+          startTime = performance.now();
+          status.textContent = "HIT SPACE!";
+        }, delay);
+      }
+
+      document.addEventListener("keydown", e => {
+        if (e.code === "Space") {
+          if (isReady) {
+            endTime = performance.now();
+            const reactionTime = Math.floor(endTime - startTime);
+            status.textContent = `🔥 Reaction Time: ${reactionTime}ms – Press Space to retry`;
+            isReady = false;
+          } else {
+            status.textContent = "😵 Too early! Wait for the cube to glow!";
+          }
+        }
+      });
+
+      startRound();
+
+      document.addEventListener("keyup", e => {
+        if (e.code === "Space" && !isReady && status.textContent.includes("Reaction Time")) {
+          startRound();
+        }
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
